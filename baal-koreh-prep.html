@@ -36,6 +36,9 @@ select{flex:1 1 200px;min-width:0;max-width:100%;min-height:44px;padding:6px 10p
 .btn.small{min-height:36px;padding:4px 10px;font-size:14px}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .modebar{padding:6px 16px}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--bg);border-top:1px solid var(--line);padding:8px 16px calc(8px + env(safe-area-inset-bottom))}
+.dock .seg{display:flex;max-width:900px;margin:0 auto}
+.dock .seg button{flex:1;min-height:48px;font-size:17px}
 .modebar .row,.stick .row{max-width:900px;margin:0 auto}
 .stick{position:sticky;top:0;z-index:10;background:var(--bg);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px 16px}
 .pbar{max-width:900px;margin:0 auto;padding:8px 16px 0;display:flex;gap:8px;flex-wrap:wrap}
@@ -188,12 +191,6 @@ noscript{display:block;padding:16px}
 
 <div class="modebar">
   <div class="row">
-    <div class="seg" id="modeSeg" role="group" aria-label="Display mode">
-      <button data-mode="bare" aria-pressed="false">Bare</button>
-      <button data-mode="nikud" aria-pressed="false">Nikud</button>
-      <button data-mode="trop" aria-pressed="false">Trop</button>
-      <button data-mode="both" aria-pressed="false">Both</button>
-    </div>
     <div class="seg" id="viewSeg" role="group" aria-label="View">
       <button data-view="analyze" aria-pressed="false">Analyze</button>
       <button data-view="study" aria-pressed="false">Study</button>
@@ -244,6 +241,15 @@ noscript{display:block;padding:16px}
   <div id="warn" hidden></div>
   <article id="text" class="text" dir="rtl" lang="he"></article>
 </main>
+
+<nav class="dock" id="dock" aria-label="Display mode">
+  <div class="seg" id="modeSeg" role="group" aria-label="Display mode">
+    <button data-mode="bare" aria-pressed="false">Bare</button>
+    <button data-mode="nikud" aria-pressed="false">Nikud</button>
+    <button data-mode="trop" aria-pressed="false">Trop</button>
+    <button data-mode="both" aria-pressed="false">Both</button>
+  </div>
+</nav>
 
 <div id="scrim" hidden></div>
 <div id="sheet" role="dialog" aria-modal="true" aria-label="Word options" hidden>
