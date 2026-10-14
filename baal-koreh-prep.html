@@ -35,14 +35,29 @@ select{flex:1 1 200px;min-width:0;max-width:100%;min-height:44px;padding:6px 10p
 .btn:hover{border-color:var(--accent)}
 .btn.small{min-height:36px;padding:4px 10px;font-size:14px}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.modebar{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 16px}
-.modebar .row{max-width:900px;margin:0 auto}
+.modebar{padding:6px 16px}
+.modebar .row,.stick .row{max-width:900px;margin:0 auto}
+.stick{position:sticky;top:0;z-index:10;background:var(--bg);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px 16px}
+.pbar{max-width:900px;margin:0 auto;padding:8px 16px 0;display:flex;gap:8px;flex-wrap:wrap}
+#hint{max-width:900px;margin:0 auto;padding:8px 16px 0;color:var(--muted);font-size:14px}
+input[type=text]{flex:1 1 120px;min-width:0;min-height:44px;font-size:20px;padding:4px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink)}
+#sheet input[type=checkbox]{width:20px;height:20px}
+.rules{display:grid;gap:6px}
+.rule{display:flex;align-items:center;gap:8px;min-height:44px;padding:2px 8px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.rule .lab{flex:1;min-width:0;font-weight:600;overflow-wrap:anywhere}
+.rule input[type=color]{width:44px;height:36px;padding:0;border:1px solid var(--line);border-radius:8px;background:transparent;cursor:pointer}
+.rule input[type=checkbox]{width:20px;height:20px}
+.mini{min-width:36px;min-height:36px;padding:0 6px;background:var(--panel);border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--ink);font:inherit}
+.rules-add select{flex:1 1 150px}
+.w.tb::after{content:"\21B5";font:.5em system-ui,sans-serif;color:var(--muted);margin-inline-start:.2em}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
 .seg button{min-height:42px;padding:6px 14px;background:transparent;border:0;border-inline-start:1px solid var(--line);cursor:pointer}
 .seg button:first-child{border-inline-start:0}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
 .opts{max-width:900px;margin:8px auto 0;padding:12px 16px;background:var(--panel);border:1px solid var(--line);border-radius:12px;display:grid;gap:12px}
-.opts .grp{display:grid;gap:6px}
+.opts{grid-template-columns:minmax(0,1fr)}
+.opts .grp{display:grid;gap:6px;min-width:0;grid-template-columns:minmax(0,1fr)}
+.opts .row>*{min-width:0}
 .opts label.chk{display:flex;gap:10px;align-items:center;min-height:32px}
 .opts input[type=checkbox]{width:20px;height:20px}
 .opts input[type=range]{flex:1;min-width:120px}
@@ -59,7 +74,7 @@ main{max-width:900px;margin:0 auto}
 .text{direction:rtl;text-align:justify;padding:8px 16px 120px;font-family:var(--text-font);font-size:var(--size);line-height:2.35;hyphens:none}
 .chap{display:block;font:14px/1.4 system-ui,sans-serif;color:var(--muted);margin:.8em 0 .2em;padding-top:.5em;border-top:1px solid var(--line);text-align:right}
 .chap:first-child{border-top:0;margin-top:0}
-.w{cursor:pointer;padding:0 .07em .1em;border-radius:6px;border-bottom:2px solid transparent;-webkit-tap-highlight-color:transparent}
+.w{color:var(--wc,inherit);cursor:pointer;padding:0 .07em .1em;border-radius:6px;border-bottom:2px solid transparent;-webkit-tap-highlight-color:transparent}
 .w:hover{background:rgba(127,127,127,.14)}
 .w.irr.man{border-bottom-color:var(--manual)}
 .w.irr.auto{border-bottom:2px dotted var(--auto)}
@@ -104,18 +119,48 @@ noscript{display:block;padding:16px}
         <option value="follow">Follow the display mode</option>
       </select>
       <label class="chk"><input type="checkbox" id="useAuto"> Preloaded (auto-detected from the text)</label>
-      <label class="chk"><input type="checkbox" id="useManual"> My manual marks</label>
+      <label class="chk"><input type="checkbox" id="useManual"> Treat my marked words as irregular</label>
       <label class="chk"><input type="checkbox" id="highlight"> Underline irregular words</label>
       <div class="muted legend" aria-label="Legend">
-        <span><span class="k man">מילה</span> manual</span>
+        <span><span class="k man">מילה</span> marked</span>
         <span><span class="k auto">מילה</span> preloaded</span>
         <span><span class="k ovr">מילה</span> custom mode</span>
       </div>
-      <div class="muted">Auto-detects: shalshelet, karne para, yerach ben yomo, kamatz katan and ketiv/kri. Tap any word in Study view to mark others yourself.</div>
+      <div class="muted">Auto-detects: shalshelet, karne para, yerach ben yomo, kamatz katan and ketiv/kri. Use the Analyze view to mark other words yourself.</div>
+    </div>
+    <div class="grp">
+      <strong>Colours</strong>
+      <label class="chk"><input type="checkbox" id="colors"> Colour words by the rules below</label>
+      <div id="ruleList" class="rules"></div>
+      <div class="muted">The first matching rule wins; use ▲ ▼ to set priority. Word rules match the word as read (the kri), also with a prefix letter (ו ה ב כ ל מ ש), so היא also catches והיא.</div>
+      <div class="row rules-add">
+        <select id="rKind" aria-label="Rule type">
+          <option value="cat:nikud">Words I marked for nikud</option>
+          <option value="cat:trop">Words I marked for trop</option>
+          <option value="cat:both">Words marked for both</option>
+          <option value="auto">Preloaded irregular words</option>
+          <option value="taam">A specific ta’am</option>
+          <option value="vowel">A specific nikud sign</option>
+          <option value="word">A specific word</option>
+        </select>
+        <select id="rVal" aria-label="Rule value" hidden></select>
+        <input id="rWord" type="text" dir="rtl" lang="he" placeholder="e.g. היא" aria-label="Hebrew word" hidden>
+        <button class="btn" id="rAdd">Add colour rule</button>
+      </div>
+    </div>
+    <div class="grp">
+      <strong>Structure</strong>
+      <label class="chk"><input type="checkbox" id="nums"> Verse numbers</label>
+      <label class="chk"><input type="checkbox" id="sof"> Sof pasuk ׃</label>
+      <label class="chk"><input type="checkbox" id="par"> Petucha / setuma (פ / ס)</label>
+      <label class="chk"><input type="checkbox" id="chap"> Chapter headings</label>
+      <label class="chk"><input type="checkbox" id="verseLine"> Each verse on its own line</label>
+      <label class="chk"><input type="checkbox" id="etnBreak"> Line break after the etnachta</label>
+      <div class="muted">Turn them all off to see the text as in a Sefer Torah. In Analyze view, the Break tool adds or removes a line break after any word.</div>
+      <div class="row"><button class="btn small" id="clearBrk">Reset my line breaks</button></div>
     </div>
     <div class="grp">
       <strong>Reading</strong>
-      <label class="chk"><input type="checkbox" id="marks"> Verse numbers, sof pasuk and פ / ס breaks</label>
       <label class="chk" for="size"><span style="min-width:84px">Text size</span><input type="range" id="size" min="22" max="64" step="2"></label>
       <label class="chk" for="font"><span style="min-width:84px">Font</span>
         <select id="font">
@@ -150,8 +195,20 @@ noscript{display:block;padding:16px}
       <button data-mode="both" aria-pressed="false">Both</button>
     </div>
     <div class="seg" id="viewSeg" role="group" aria-label="View">
+      <button data-view="analyze" aria-pressed="false">Analyze</button>
       <button data-view="study" aria-pressed="false">Study</button>
       <button data-view="practice" aria-pressed="false">Practice</button>
+    </div>
+  </div>
+</div>
+
+<div class="stick" id="stick" hidden>
+  <div class="row">
+    <div class="seg" id="toolSeg" role="group" aria-label="Analyze tool" hidden>
+      <button data-tool="nikud" aria-pressed="false">Nikud</button>
+      <button data-tool="trop" aria-pressed="false">Trop</button>
+      <button data-tool="break" aria-pressed="false">Break</button>
+      <button data-tool="detail" aria-pressed="false">Details</button>
     </div>
     <span id="pracTools" class="row" hidden>
       <button class="btn small" id="revealAll">Reveal all</button>
@@ -159,6 +216,28 @@ noscript{display:block;padding:16px}
     </span>
   </div>
 </div>
+
+<div id="pracBar" class="pbar" hidden>
+  <label class="sr" for="pTest">Test on</label>
+  <select id="pTest">
+    <option value="marked">Test: any marked word</option>
+    <option value="nikud">Test: nikud-marked words</option>
+    <option value="trop">Test: trop-marked words</option>
+    <option value="all">Test: all words</option>
+  </select>
+  <label class="sr" for="pCover">Cover</label>
+  <select id="pCover">
+    <option value="smart">Cover: just the part I marked</option>
+    <option value="both">Cover: nikud and trop</option>
+  </select>
+  <label class="sr" for="pOthers">Other words</label>
+  <select id="pOthers">
+    <option value="full">Other words: fully shown</option>
+    <option value="mode">Other words: follow display mode</option>
+  </select>
+</div>
+
+<div id="hint" hidden></div>
 
 <main>
   <div id="info" role="status" aria-live="polite"></div>
@@ -174,7 +253,12 @@ noscript{display:block;padding:16px}
   </div>
   <div class="muted" id="shInfo"></div>
   <div class="sh-modes" id="shModes"></div>
-  <label class="row" style="min-height:40px"><input type="checkbox" id="shIrr" style="width:20px;height:20px"> Mark as irregular (my list)</label>
+  <div class="row" style="gap:18px;min-height:40px">
+    <label class="row"><input type="checkbox" id="shN"> Difficult nikud</label>
+    <label class="row"><input type="checkbox" id="shT"> Special trop</label>
+  </div>
+  <div class="muted" style="margin-top:6px">Colour all words like this one (tap again to remove):</div>
+  <div class="row" id="shChips" style="margin-top:6px"></div>
   <div class="sh-nav">
     <button class="btn small" id="shPrev">‹ Previous word</button>
     <button class="btn small" id="shNext">Next word ›</button>
@@ -290,6 +374,14 @@ function autoReasons(w){
   return r;
 }
 
+// consonants only (maqaf kept so joined words can be split)
+const skel = t => t.replace(/[֑-ֽֿ-ׇ ]/g, '');
+function addFeatures(w){
+  w.sk = skel(w.t).split('־').filter(Boolean);                 // letters of each maqaf-joined part
+  w.tm = new Set(w.t.match(/[֑-֯׀]/g) || []);        // ta'amim + paseq present
+  w.nq = new Set(w.t.match(/[ְ-ׇּׁׂ]/g) || []); // vowels, dagesh, dots
+}
+
 function heNum(n){
   const ones=['','א','ב','ג','ד','ה','ו','ז','ח','ט'], tens=['','י','כ','ל','מ','נ','ס','ע','פ','צ'], hund=['','ק','ר','ש','ת'];
   let s = '';
@@ -340,7 +432,7 @@ function parseVerse(html){
     if (m){ const e = kq[+m[1]]; words.push({ t: t.replace(m[0], e.q), ketiv: e.k }); }
     else words.push({ t });
   }
-  words.forEach(w => { w.auto = autoReasons(w); });
+  words.forEach(w => { w.auto = autoReasons(w); addFeatures(w); });
   return { words, para };
 }
 
@@ -397,11 +489,22 @@ async function loadAliyah(p, ai){
 
 /* ---------- state ---------- */
 const STATE_KEY = 'bkprep.state.v1';
-const DEF = { parsha:'Bereshit', aliyah:0, mode:'both', view:'study', policy:'full', marks:true, highlight:true,
-              useAuto:true, useManual:true, size:34, font:'noto', over:{}, manual:{} };
-let S = Object.assign({}, DEF);
+const DEF = { parsha:'Bereshit', aliyah:0, mode:'both', view:'analyze', tool:'nikud', policy:'full', highlight:true,
+              useAuto:true, useManual:true, size:34, font:'noto', over:{}, mk:{}, brk:{}, colors:true,
+              nums:true, sof:true, par:true, chap:true, verseLine:false, etnBreak:false,
+              prac:{ test:'marked', cover:'smart', others:'full' },
+              rules:[ { type:'cat', val:'both',  color:'#be4bdb', on:true },
+                      { type:'cat', val:'nikud', color:'#e8590c', on:true },
+                      { type:'cat', val:'trop',  color:'#339af0', on:true } ] };
+let S = JSON.parse(JSON.stringify(DEF));
 try { Object.assign(S, JSON.parse(localStorage.getItem(STATE_KEY) || '{}')); } catch(e){}
-S.over = S.over || {}; S.manual = S.manual || {};
+S.over = S.over || {}; S.mk = S.mk || {}; S.brk = S.brk || {};
+S.prac = Object.assign({}, DEF.prac, S.prac || {});
+if (!Array.isArray(S.rules)) S.rules = JSON.parse(JSON.stringify(DEF.rules));
+// migrate older saves: one "manual" mark becomes nikud + trop; one switch for markers becomes three
+if (S.manual){ Object.keys(S.manual).forEach(k => { S.mk[k] = 3; }); delete S.manual; }
+if (S.marks === false){ S.nums = S.sof = S.par = false; }
+delete S.marks;
 const save = () => { try { localStorage.setItem(STATE_KEY, JSON.stringify(S)); } catch(e){} };
 
 const FONTS = {
@@ -415,10 +518,89 @@ let model = null, loadSeq = 0, curEl = null;
 const rev = new Set(), revV = new Set();
 
 /* ---------- display logic ---------- */
-const isIrr = (key, w) => !!((S.useManual && S.manual[key]) || (S.useAuto && w.auto.length));
+const isIrr = (key, w) => !!((S.useManual && S.mk[key]) || (S.useAuto && w.auto.length));
+
+/* ---------- colour rules ---------- */
+// [character, English, Hebrew]
+const TAAMIM = [
+  ['֑','Etnachta','אתנחתא'],['֒','Segolta','סגולתא'],['֓','Shalshelet','שלשלת'],
+  ['֔','Zaqef katan','זקף קטן'],['֕','Zaqef gadol','זקף גדול'],['֖','Tipcha','טפחא'],
+  ['֗','Revia','רביע'],['֘','Zarka','זרקא'],['֙','Pashta','פשטא'],['֚','Yetiv','יתיב'],
+  ['֛','Tevir','תביר'],['֜','Geresh','גרש'],['֞','Gershayim','גרשיים'],['֟','Karne para','קרני פרה'],
+  ['֠','Telisha gedola','תלישא גדולה'],['֡','Pazer','פזר'],['֣','Munach','מונח'],
+  ['֤','Mahpach','מהפך'],['֥','Mercha','מרכא'],['֦','Mercha kefula','מרכא כפולה'],
+  ['֧','Darga','דרגא'],['֨','Kadma / Azla','קדמא'],['֩','Telisha ketana','תלישא קטנה'],
+  ['֪','Yerach ben yomo','ירח בן יומו'],['׀','Paseq','פסק']
+];
+const VOWELS = [
+  ['ְ','Sheva','שוא'],['ֱ','Chataf segol','חטף סגול'],['ֲ','Chataf patach','חטף פתח'],
+  ['ֳ','Chataf kamatz','חטף קמץ'],['ִ','Chirik','חיריק'],['ֵ','Tzere','צירי'],
+  ['ֶ','Segol','סגול'],['ַ','Patach','פתח'],['ָ','Kamatz','קמץ'],['ֹ','Cholam','חולם'],
+  ['ֻ','Kubutz','קובוץ'],['ּ','Dagesh / shuruk','דגש'],['ׇ','Kamatz katan','קמץ קטן'],['ׂ','Sin dot','שׂ']
+];
+const AUTO_LABELS = ['Shalshelet','Karne para','Yerach ben yomo','Kamatz katan','Ketiv ≠ kri'];
+const PALETTE = ['#e8590c','#339af0','#be4bdb','#2f9e44','#e03131','#f08c00','#0c8599','#d6336c'];
+const HINTS = {
+  nikud:  'Nikud tool: tap a word whose vowels are hard to remember. Tap again to unmark.',
+  trop:   'Trop tool: tap a word with a difficult or special ta’am. Tap again to unmark.',
+  break:  'Break tool: tap a word to add or remove a line break after it.',
+  detail: 'Details tool: tap a word for its options, including colouring every word like it.'
+};
+const nameOf = (list, ch) => { const x = list.find(a => a[0] === ch); return x ? x[1] + ' · ' + x[2] : ch; };
+
+function ruleMatch(r, w, key){
+  const f = S.mk[key] || 0;
+  switch (r.type){
+    case 'cat':   return r.val === 'nikud' ? !!(f & 1) : r.val === 'trop' ? !!(f & 2) : f === 3;
+    case 'auto':  return r.val === '*' ? w.auto.length > 0 : w.auto.includes(r.val);
+    case 'taam':  return w.tm.has(r.val);
+    case 'vowel': return w.nq.has(r.val);
+    case 'word':  return w.sk.some(s => s === r.val ||
+                    (s.length > r.val.length && s.endsWith(r.val) && [...s.slice(0, s.length - r.val.length)].every(c => 'ושהבכלמ'.includes(c))));
+  }
+  return false;
+}
+function colorFor(w, key){
+  if (!S.colors) return null;
+  for (const r of S.rules) if (r.on && ruleMatch(r, w, key)) return r.color;
+  return null;
+}
+function ruleLabel(r){
+  if (r.type === 'cat') return r.val === 'nikud' ? 'Marked: nikud' : r.val === 'trop' ? 'Marked: trop' : 'Marked: both nikud and trop';
+  if (r.type === 'auto') return r.val === '*' ? 'Preloaded irregular (any)' : 'Preloaded: ' + r.val;
+  if (r.type === 'taam') return 'Ta’am: ' + nameOf(TAAMIM, r.val);
+  if (r.type === 'vowel') return 'Nikud: ' + nameOf(VOWELS, r.val);
+  return 'Word: ' + r.val;
+}
+const findRule = (type, val) => S.rules.findIndex(r => r.type === type && r.val === val);
+function addRule(type, val){
+  if (!val || findRule(type, val) >= 0) return false;
+  S.rules.unshift({ type, val, color: PALETTE[S.rules.length % PALETTE.length], on: true });   // newest rule has top priority
+  save(); renderRules(); updateAll();
+  return true;
+}
+function toggleRule(type, val){
+  const i = findRule(type, val);
+  if (i >= 0){ S.rules.splice(i, 1); save(); renderRules(); updateAll(); return false; }
+  return addRule(type, val);
+}
 
 function effMode(key, w, vk){
-  if (S.view === 'practice' && (rev.has(key) || revV.has(vk))) return 'both';
+  const f = S.mk[key] || 0;
+  if (S.view === 'analyze') return S.mode;
+  if (S.view === 'practice'){
+    if (rev.has(key) || revV.has(vk)) return 'both';
+    const t = S.prac.test;
+    const inSet = t === 'all' || (t === 'marked' && f) || (t === 'nikud' && (f & 1)) || (t === 'trop' && (f & 2));
+    if (!inSet) return S.prac.others === 'full' ? 'both' : S.mode;
+    // which parts to hide on a tested word
+    let hn, ht;
+    if (S.prac.cover === 'both' || (t === 'all' && !f)){ hn = ht = true; }
+    else if (t === 'nikud'){ hn = true; ht = false; }
+    else if (t === 'trop'){ hn = false; ht = true; }
+    else { hn = !!(f & 1); ht = !!(f & 2); }
+    return hn && ht ? 'bare' : hn ? 'trop' : ht ? 'nikud' : 'both';
+  }
   if (S.over[key]) return S.over[key];
   if (isIrr(key, w)){
     if (S.policy === 'full') return 'both';
@@ -431,20 +613,25 @@ function paint(e){
   const w = e._w, key = e._key;
   const m = effMode(key, w, e._vk);
   e.textContent = form(w, m);
-  const man = !!(S.useManual && S.manual[key]), auto = !!(S.useAuto && w.auto.length);
+  const f = S.mk[key] || 0;
+  const man = !!(S.useManual && f), auto = !!(S.useAuto && w.auto.length);
+  const col = colorFor(w, key);
+  if (col) e.style.setProperty('--wc', col); else e.style.removeProperty('--wc');
   e.classList.toggle('irr', S.highlight && (man || auto));
   e.classList.toggle('man', man);
   e.classList.toggle('auto', auto && !man);
-  e.classList.toggle('ovr', !!S.over[key]);
+  e.classList.toggle('ovr', S.view === 'study' && !!S.over[key]);
+  e.classList.toggle('tb', S.view === 'analyze' && S.tool === 'break' && !!S.brk[key]);
   e.classList.toggle('rev', S.view === 'practice' && (rev.has(key) || revV.has(e._vk)));
 }
 
 function updateInfo(){
   if (!model) return;
   const ws = document.querySelectorAll('.w');
-  let irr = 0; ws.forEach(e => { if (isIrr(e._key, e._w)) irr++; });
+  let irr = 0, nk = 0, tk = 0;
+  ws.forEach(e => { if (e._w.auto.length) irr++; const f = S.mk[e._key] || 0; if (f & 1) nk++; if (f & 2) tk++; });
   const a = model.p.r.length > 1 ? ALIYAH_NAMES[model.ai] + ' · ' : 'Rishon · ';
-  $('#info').textContent = model.p.id + ' · ' + a + rangeLabel(model.r) + ' · ' + model.verses.length + ' verses · ' + ws.length + ' words · ' + irr + ' irregular';
+  $('#info').textContent = model.p.id + ' · ' + a + rangeLabel(model.r) + ' · ' + model.verses.length + ' verses · ' + ws.length + ' words · ' + irr + ' preloaded irregular · ' + nk + ' nikud marked · ' + tk + ' trop marked';
 }
 
 function updateAll(){
@@ -460,7 +647,7 @@ function render(){
   let lastCh = null;
   const pk = model.p.id + '.' + model.ai;
   model.verses.forEach(vs => {
-    if (vs.ch !== lastCh){ frag.append(el('div', 'chap', 'פרק ' + heNum(vs.ch))); lastCh = vs.ch; }
+    if (vs.ch !== lastCh){ if (S.chap) frag.append(el('div', 'chap', 'פרק ' + heNum(vs.ch))); lastCh = vs.ch; }
     const vk = vs.ch + ':' + vs.v;
     const sp = el('span', 'verse');
     const kids = vs.words.map((w, i) => {
@@ -470,17 +657,25 @@ function render(){
       paint(e);
       return e;
     });
-    if (S.marks){
-      // keep the verse number with its first word, and the sof pasuk / פ ס with its last word
+    const els = kids.slice();
+    // keep the verse number with its first word, and the sof pasuk / פ ס with its last word
+    if (S.nums){
       const n = el('span', 'vnum', heNum(vs.v));
       n.dataset.vk = vk; n.setAttribute('role', 'button'); n.setAttribute('aria-label', 'Verse ' + vs.v);
       if (kids.length){ const h = el('span', 'nb'); h.append(n, ' ', kids[0]); kids[0] = h; } else kids.push(n);
-      const tail = [el('span', 'sof', '׃')];
-      if (vs.para) tail.push(el('span', 'par', vs.para));
-      const li = kids.length - 1, t = el('span', 'nb');
-      t.append(kids[li], ...tail); kids[li] = t;
     }
-    kids.forEach((k, i) => { if (i) sp.append(' '); sp.append(k); });
+    const tail = [];
+    if (S.sof) tail.push(el('span', 'sof', '׃'));
+    if (S.par && vs.para) tail.push(el('span', 'par', vs.para));
+    if (tail.length && kids.length){ const li = kids.length - 1, t = el('span', 'nb'); t.append(kids[li], ...tail); kids[li] = t; }
+    kids.forEach((k, i) => {
+      sp.append(k);
+      const w = vs.words[i], last = i === kids.length - 1;
+      // default break (verse per line / after etnachta) flipped by the user's own break marks
+      const def = !!((S.etnBreak && w && /֑/.test(w.t)) || (S.verseLine && last));
+      const flip = !!(els[i] && S.brk[els[i]._key]);
+      sp.append(def !== flip ? document.createElement('br') : ' ');
+    });
     frag.append(sp, ' ');
   });
   root.append(frag);
@@ -544,7 +739,18 @@ function sheetFill(){
     };
     box.append(b);
   });
-  $('#shIrr').checked = !!S.manual[key];
+  $('#shModes').hidden = S.view === 'analyze';   // per-word display overrides belong to Study view
+  const f = S.mk[key] || 0;
+  $('#shN').checked = !!(f & 1); $('#shT').checked = !!(f & 2);
+  const chips = $('#shChips'); chips.textContent = '';
+  const chip = (txt, type, val) => {
+    const b = el('button', 'btn small'); b.type = 'button';
+    b.textContent = (findRule(type, val) >= 0 ? '✓ ' : '+ ') + txt;
+    b.onclick = () => { toggleRule(type, val); sheetFill(); };
+    chips.append(b);
+  };
+  w.sk.forEach(s => chip('word ' + s, 'word', s));
+  [...w.tm].forEach(ch => { const a = TAAMIM.find(x => x[0] === ch); chip('◌' + ch + ' ' + (a ? a[1] : ''), 'taam', ch); });
   const info = [];
   if (w.auto.length) info.push('Preloaded: ' + w.auto.join(', '));
   if (w.ketiv) info.push('Written (ketiv): ' + strip(w.ketiv, 'bare') + ' · Read (kri): ' + strip(w.t, 'nikud'));
@@ -574,10 +780,24 @@ function stepWord(d){
 
 /* ---------- events ---------- */
 function onWord(e){
+  const key = e._key;
   if (S.view === 'practice'){
-    if (rev.has(e._key)) rev.delete(e._key); else rev.add(e._key);
+    if (rev.has(key)) rev.delete(key); else rev.add(key);
     paint(e);
-  } else openSheet(e);
+    return;
+  }
+  if (S.view === 'analyze' && S.tool !== 'detail'){
+    if (S.tool === 'break'){
+      if (S.brk[key]) delete S.brk[key]; else S.brk[key] = 1;
+      save(); render();
+      return;
+    }
+    const f = (S.mk[key] || 0) ^ (S.tool === 'trop' ? 2 : 1);   // bit 1 = nikud, bit 2 = trop
+    if (f) S.mk[key] = f; else delete S.mk[key];
+    save(); paint(e); updateInfo();
+    return;
+  }
+  openSheet(e);
 }
 $('#text').addEventListener('click', ev => {
   const w = ev.target.closest('.w');
@@ -598,25 +818,37 @@ $('#scrim').onclick = closeSheet;
 $('#shClose').onclick = closeSheet;
 $('#shPrev').onclick = () => stepWord(-1);
 $('#shNext').onclick = () => stepWord(1);
-$('#shIrr').onchange = ev => {
+function setFlag(bit, on){
   if (!curEl) return;
-  if (ev.target.checked) S.manual[curEl._key] = 1; else delete S.manual[curEl._key];
+  const k = curEl._key, f = on ? (S.mk[k] || 0) | bit : (S.mk[k] || 0) & ~bit;
+  if (f) S.mk[k] = f; else delete S.mk[k];
   save(); paint(curEl); updateInfo(); sheetFill();
-};
+}
+$('#shN').onchange = ev => setFlag(1, ev.target.checked);
+$('#shT').onchange = ev => setFlag(2, ev.target.checked);
 
 function syncControls(){
   document.querySelectorAll('#modeSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === S.mode)));
   document.querySelectorAll('#viewSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === S.view)));
-  $('#pracTools').hidden = S.view !== 'practice';
+  const v = S.view;
+  $('#stick').hidden = v === 'study';
+  $('#toolSeg').hidden = v !== 'analyze';
+  $('#pracTools').hidden = v !== 'practice';
+  $('#pracBar').hidden = v !== 'practice';
+  document.querySelectorAll('#toolSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tool === S.tool)));
+  $('#hint').hidden = v !== 'analyze'; $('#hint').textContent = HINTS[S.tool] || '';
+  $('#pTest').value = S.prac.test; $('#pCover').value = S.prac.cover; $('#pOthers').value = S.prac.others;
+  $('#colors').checked = S.colors;
+  ['nums','sof','par','chap','verseLine','etnBreak'].forEach(id => { $('#' + id).checked = !!S[id]; });
   $('#policy').value = S.policy; $('#useAuto').checked = S.useAuto; $('#useManual').checked = S.useManual;
-  $('#highlight').checked = S.highlight; $('#marks').checked = S.marks;
+  $('#highlight').checked = S.highlight;
   $('#size').value = S.size; $('#font').value = S.font;
   document.documentElement.style.setProperty('--size', S.size + 'px');
   document.documentElement.style.setProperty('--text-font', FONTS[S.font] || FONTS.noto);
 }
 document.querySelectorAll('#modeSeg button').forEach(b => b.onclick = () => { S.mode = b.dataset.mode; save(); syncControls(); updateAll(); });
 document.querySelectorAll('#viewSeg button').forEach(b => b.onclick = () => {
-  S.view = b.dataset.view; rev.clear(); revV.clear(); if (S.view === 'practice' && !$('#sheet').hidden) closeSheet();
+  S.view = b.dataset.view; rev.clear(); revV.clear(); if (!$('#sheet').hidden) closeSheet();
   save(); syncControls(); updateAll();
 });
 $('#revealAll').onclick = () => { if (model) model.verses.forEach(v => revV.add(v.ch + ':' + v.v)); updateAll(); };
@@ -625,7 +857,15 @@ $('#policy').onchange = ev => { S.policy = ev.target.value; save(); updateAll();
 $('#useAuto').onchange = ev => { S.useAuto = ev.target.checked; save(); updateAll(); };
 $('#useManual').onchange = ev => { S.useManual = ev.target.checked; save(); updateAll(); };
 $('#highlight').onchange = ev => { S.highlight = ev.target.checked; save(); updateAll(); };
-$('#marks').onchange = ev => { S.marks = ev.target.checked; save(); render(); };
+['nums','sof','par','chap','verseLine','etnBreak'].forEach(id => {
+  $('#' + id).onchange = ev => { S[id] = ev.target.checked; save(); render(); };
+});
+$('#clearBrk').onclick = () => { S.brk = {}; save(); render(); };
+$('#colors').onchange = ev => { S.colors = ev.target.checked; save(); updateAll(); };
+document.querySelectorAll('#toolSeg button').forEach(b => b.onclick = () => { S.tool = b.dataset.tool; save(); syncControls(); updateAll(); });
+$('#pTest').onchange = ev => { S.prac.test = ev.target.value; save(); updateAll(); };
+$('#pCover').onchange = ev => { S.prac.cover = ev.target.value; save(); updateAll(); };
+$('#pOthers').onchange = ev => { S.prac.others = ev.target.value; save(); updateAll(); };
 $('#size').oninput = ev => { S.size = +ev.target.value; save(); syncControls(); };
 $('#font').onchange = ev => { S.font = ev.target.value; save(); syncControls(); };
 $('#optBtn').onclick = () => {
@@ -655,6 +895,41 @@ function fillAliyah(){
   sel.value = byId(S.parsha).id;
 })();
 
+/* colour rule editor */
+const opt = (v, t) => { const o = el('option', null, t); o.value = v; return o; };
+function mini(txt, label, fn){ const b = el('button', 'mini', txt); b.type = 'button'; b.setAttribute('aria-label', label); b.onclick = fn; return b; }
+function renderRules(){
+  const box = $('#ruleList'); box.textContent = '';
+  if (!S.rules.length){ box.append(el('div', 'muted', 'No colour rules yet. Add one below, or from the Details tool.')); return; }
+  S.rules.forEach((r, i) => {
+    const row = el('div', 'rule');
+    const on = document.createElement('input'); on.type = 'checkbox'; on.checked = r.on; on.setAttribute('aria-label', 'Rule on or off');
+    on.onchange = () => { r.on = on.checked; save(); updateAll(); };
+    const col = document.createElement('input'); col.type = 'color'; col.value = r.color; col.setAttribute('aria-label', 'Colour');
+    const lab = el('span', 'lab', ruleLabel(r)); lab.style.color = r.color;
+    col.oninput = () => { r.color = col.value; lab.style.color = r.color; updateAll(); };
+    col.onchange = save;
+    const move = d => () => { const j = i + d; if (j < 0 || j >= S.rules.length) return; [S.rules[i], S.rules[j]] = [S.rules[j], S.rules[i]]; save(); renderRules(); updateAll(); };
+    row.append(on, col, lab, mini('▲', 'Higher priority', move(-1)), mini('▼', 'Lower priority', move(1)),
+      mini('✕', 'Delete rule', () => { S.rules.splice(i, 1); save(); renderRules(); updateAll(); }));
+    box.append(row);
+  });
+}
+function fillRuleVals(){
+  const k = $('#rKind').value, v = $('#rVal');
+  v.textContent = ''; $('#rWord').hidden = k !== 'word'; v.hidden = !(k === 'taam' || k === 'vowel' || k === 'auto');
+  if (k === 'taam') TAAMIM.forEach(a => v.append(opt(a[0], '◌' + a[0] + '  ' + a[1] + ' · ' + a[2])));
+  else if (k === 'vowel') VOWELS.forEach(a => v.append(opt(a[0], '◌' + a[0] + '  ' + a[1] + ' · ' + a[2])));
+  else if (k === 'auto'){ v.append(opt('*', 'Any preloaded irregular')); AUTO_LABELS.forEach(l => v.append(opt(l, l))); }
+}
+$('#rKind').onchange = fillRuleVals;
+$('#rAdd').onclick = () => {
+  const k = $('#rKind').value;
+  if (k.startsWith('cat:')) addRule('cat', k.slice(4));
+  else if (k === 'word') addRule('word', skel($('#rWord').value).replace(/[\s־]+/g, ''));
+  else addRule(k, $('#rVal').value);
+};
+
 /* data buttons */
 $('#offline').onclick = async ev => {
   const b = ev.target; b.disabled = true; let ok = 0;
@@ -667,7 +942,7 @@ $('#offline').onclick = async ev => {
   b.textContent = ok >= PARSHIYOT.length ? 'All saved offline ✓' : 'Saved ' + Math.max(ok, 0) + ' / ' + PARSHIYOT.length + ' — tap to retry';
 };
 $('#export').onclick = () => {
-  const blob = new Blob([JSON.stringify({ app: 'bkprep', v: 1, over: S.over, manual: S.manual }, null, 1)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify({ app: 'bkprep', v: 2, over: S.over, mk: S.mk, brk: S.brk, rules: S.rules }, null, 1)], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'baal-koreh-marks.json';
   document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 };
@@ -677,17 +952,21 @@ $('#importFile').onchange = async ev => {
   try {
     const d = JSON.parse(await f.text());
     if (d.app !== 'bkprep') throw new Error('not a marks file');
-    Object.assign(S.over, d.over || {}); Object.assign(S.manual, d.manual || {});
-    save(); updateAll();
+    Object.assign(S.over, d.over || {}); Object.assign(S.mk, d.mk || {}); Object.assign(S.brk, d.brk || {});
+    Object.keys(d.manual || {}).forEach(k => { S.mk[k] = 3; });          // files from the first version
+    if (Array.isArray(d.rules)) S.rules = d.rules.filter(r => r && r.type && r.val != null && /^#[0-9a-f]{6}$/i.test(r.color || ''));
+    save(); renderRules(); render();
   } catch(e){ setWarn('Could not import that file (' + e.message + ').', false); }
   ev.target.value = '';
 };
 $('#clearMarks').onclick = () => {
-  if (!confirm('Clear all your manual marks and per-word display choices?')) return;
-  S.over = {}; S.manual = {}; save(); updateAll();
+  if (!confirm('Clear all your nikud/trop marks, line breaks and per-word display choices? (Colour rules are kept.)')) return;
+  S.over = {}; S.mk = {}; S.brk = {}; save(); render();
 };
 
 syncControls();
+renderRules();
+fillRuleVals();
 fillAliyah();
 show();
 })();
